@@ -46,14 +46,14 @@ int nextId = 1;
 void clearCanvas() {
     for (int i = 0; i < HEIGHT; i++) {
         for (int j = 0; j < WIDTH; j++) {
-            canvas[i][j] = '_';
+            canvas[i][j] = '_'; // Standard requirement character
         }
     }
 }
 
 void putPixel(int x, int y) {
     if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT)
-        canvas[y][x] = '*';
+        canvas[y][x] = '*'; // Standard requirement character
 }
 
 void drawLinePrimitive(int x1, int y1, int x2, int y2) {
@@ -184,12 +184,33 @@ void redrawCanvas() {
 void displayCanvas() {
     redrawCanvas();
 
+    // Wipes console clean and prevents printing artifacts from trailing downward
+    printf("\033[H\033[J"); 
+
+    // Blue Frame Top Border
+    printf("\033[1;34m+"); 
+    for(int j = 0; j < WIDTH; j++) printf("-");
+    printf("+\033[0m\n"); 
+
     for (int i = 0; i < HEIGHT; i++) {
+        printf("\033[1;34m|\033[0m"); // Blue Frame Left Border
+
         for (int j = 0; j < WIDTH; j++) {
-            printf("%c", canvas[i][j]);
+            if (canvas[i][j] == '*') {
+                // Renders the shapes in vibrant glowing green asterisks
+                printf("\033[1;32m%c\033[0m", canvas[i][j]); 
+            } else {
+                // Renders the background underscores in a soft, dim gray
+                printf("\033[2;37m%c\033[0m", canvas[i][j]); 
+            }
         }
-        printf("\n");
+        printf("\033[1;34m|\033[0m\n"); // Blue Frame Right Border
     }
+
+    // Blue Frame Bottom Border
+    printf("\033[1;34m+");
+    for(int j = 0; j < WIDTH; j++) printf("-");
+    printf("+\033[0m\n");
 }
 
 void addRectangle() {
@@ -198,14 +219,12 @@ void addRectangle() {
     s.type = RECTANGLE;
 
     printf("x y width height: ");
-    scanf("%d %d %d %d",
-          &s.data.rect.x,
-          &s.data.rect.y,
-          &s.data.rect.w,
-          &s.data.rect.h);
+    if (scanf("%d %d %d %d", &s.data.rect.x, &s.data.rect.y, &s.data.rect.w, &s.data.rect.h) != 4) {
+        printf("Invalid input parameters.\n");
+    }
+    while (getchar() != '\n'); // Flushes out extra characters to stop jumping menu loops
 
     objects[objectCount++] = s;
-
     printf("Rectangle ID = %d\n", s.id);
 }
 
@@ -215,14 +234,12 @@ void addLine() {
     s.type = LINE;
 
     printf("x1 y1 x2 y2: ");
-    scanf("%d %d %d %d",
-          &s.data.line.x1,
-          &s.data.line.y1,
-          &s.data.line.x2,
-          &s.data.line.y2);
+    if (scanf("%d %d %d %d", &s.data.line.x1, &s.data.line.y1, &s.data.line.x2, &s.data.line.y2) != 4) {
+        printf("Invalid input parameters.\n");
+    }
+    while (getchar() != '\n'); 
 
     objects[objectCount++] = s;
-
     printf("Line ID = %d\n", s.id);
 }
 
@@ -232,13 +249,12 @@ void addCircle() {
     s.type = CIRCLE;
 
     printf("centerX centerY radius: ");
-    scanf("%d %d %d",
-          &s.data.circle.xc,
-          &s.data.circle.yc,
-          &s.data.circle.r);
+    if (scanf("%d %d %d", &s.data.circle.xc, &s.data.circle.yc, &s.data.circle.r) != 3) {
+        printf("Invalid input parameters.\n");
+    }
+    while (getchar() != '\n'); 
 
     objects[objectCount++] = s;
-
     printf("Circle ID = %d\n", s.id);
 }
 
@@ -248,16 +264,12 @@ void addTriangle() {
     s.type = TRIANGLE;
 
     printf("x1 y1 x2 y2 x3 y3: ");
-    scanf("%d %d %d %d %d %d",
-          &s.data.triangle.x1,
-          &s.data.triangle.y1,
-          &s.data.triangle.x2,
-          &s.data.triangle.y2,
-          &s.data.triangle.x3,
-          &s.data.triangle.y3);
+    if (scanf("%d %d %d %d %d %d", &s.data.triangle.x1, &s.data.triangle.y1, &s.data.triangle.x2, &s.data.triangle.y2, &s.data.triangle.x3, &s.data.triangle.y3) != 6) {
+        printf("Invalid input parameters.\n");
+    }
+    while (getchar() != '\n'); 
 
     objects[objectCount++] = s;
-
     printf("Triangle ID = %d\n", s.id);
 }
 
@@ -273,7 +285,10 @@ void deleteObject() {
     int id;
 
     printf("Enter ID to delete: ");
-    scanf("%d", &id);
+    if (scanf("%d", &id) != 1) {
+        printf("Invalid ID parameter.\n");
+    }
+    while (getchar() != '\n'); 
 
     int pos = findObject(id);
 
@@ -287,7 +302,6 @@ void deleteObject() {
     }
 
     objectCount--;
-
     printf("Deleted\n");
 }
 
@@ -295,7 +309,10 @@ void modifyObject() {
     int id;
 
     printf("Enter ID to modify: ");
-    scanf("%d", &id);
+    if (scanf("%d", &id) != 1) {
+        printf("Invalid ID parameter.\n");
+    }
+    while (getchar() != '\n'); 
 
     int pos = findObject(id);
 
@@ -309,41 +326,25 @@ void modifyObject() {
     switch (s->type) {
         case RECTANGLE:
             printf("New x y width height: ");
-            scanf("%d %d %d %d",
-                  &s->data.rect.x,
-                  &s->data.rect.y,
-                  &s->data.rect.w,
-                  &s->data.rect.h);
+            scanf("%d %d %d %d", &s->data.rect.x, &s->data.rect.y, &s->data.rect.w, &s->data.rect.h);
             break;
 
         case LINE:
             printf("New x1 y1 x2 y2: ");
-            scanf("%d %d %d %d",
-                  &s->data.line.x1,
-                  &s->data.line.y1,
-                  &s->data.line.x2,
-                  &s->data.line.y2);
+            scanf("%d %d %d %d", &s->data.line.x1, &s->data.line.y1, &s->data.line.x2, &s->data.line.y2);
             break;
 
         case CIRCLE:
             printf("New centerX centerY radius: ");
-            scanf("%d %d %d",
-                  &s->data.circle.xc,
-                  &s->data.circle.yc,
-                  &s->data.circle.r);
+            scanf("%d %d %d", &s->data.circle.xc, &s->data.circle.yc, &s->data.circle.r);
             break;
 
         case TRIANGLE:
             printf("New x1 y1 x2 y2 x3 y3: ");
-            scanf("%d %d %d %d %d %d",
-                  &s->data.triangle.x1,
-                  &s->data.triangle.y1,
-                  &s->data.triangle.x2,
-                  &s->data.triangle.y2,
-                  &s->data.triangle.x3,
-                  &s->data.triangle.y3);
+            scanf("%d %d %d %d %d %d", &s->data.triangle.x1, &s->data.triangle.y1, &s->data.triangle.x2, &s->data.triangle.y2, &s->data.triangle.x3, &s->data.triangle.y3);
             break;
     }
+    while (getchar() != '\n'); 
 
     printf("Modified\n");
 }
@@ -389,7 +390,12 @@ int main() {
         printf("9. Exit\n");
         printf("Choice: ");
 
-        scanf("%d", &choice);
+        if (scanf("%d", &choice) != 1) {
+            printf("Invalid choice input\n");
+            while (getchar() != '\n'); 
+            continue;
+        }
+        while (getchar() != '\n'); 
 
         switch (choice) {
             case 1:
